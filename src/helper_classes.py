@@ -50,11 +50,13 @@ class ManifestParser(ConfigParser):
 
         self.add_delimiter()
         self.add_option('syn_name', default=None, help="Name of the folder at remote synthesis machine", type='')
-        self.add_option('syn_device', default=None, help = "Target FPGA device", type = '');
-        self.add_option('syn_grade', default=None, help = "Speed grade of target FPGA", type = '');
-        self.add_option('syn_package', default=None, help = "Package variant of target FPGA", type = '');
-        self.add_option('syn_top', default=None, help = "Top level module for synthesis", type = '');
-        self.add_option('syn_project', default=None, help = "Project file (.xise, .ise, .qpf)", type = '');
+        self.add_option('syn_device', default=None, help = "Target FPGA device", type = '')
+        self.add_option('syn_grade', default=None, help = "Speed grade of target FPGA", type = '')
+        self.add_option('syn_package', default=None, help = "Package variant of target FPGA", type = '')
+        self.add_option('syn_top', default=None, help = "Top level module for synthesis", type = '')
+        self.add_option('syn_project', default=None, help = "Vendor flow project file", type = '')
+        self.add_option('syn_preflow', default=None, help = "Quartus pre-flow script", type = '')
+        self.add_option('syn_postflow', default=None, help = "Quartus post-flow script", type = '')
 
         self.add_delimiter()
         self.add_option('vsim_opt', default="", help="Additional options for vsim", type='')

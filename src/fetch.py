@@ -29,7 +29,6 @@ class ModulePool(list):
             pass
 
         def fetch_single_module(self, module):
-            import global_mod
             new_modules = []
             p.vprint("Fetching module: " + str(module))
 

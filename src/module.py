@@ -196,15 +196,23 @@ class Module(object):
             opt_map["files"] = self.__make_list(opt_map["files"])
             paths = []
             for path in opt_map["files"]:
-                if not path_mod.is_abs_path(path):
-                    path = path_mod.rel2abs(path, self.path)
-                    paths.append(path)
-                else:
+                if path_mod.is_abs_path(path):
                     p.echo(path + " is an absolute path. Omitting.")
+
+                path = path_mod.rel2abs(path, self.path)
                 if not os.path.exists(path):
                     p.echo("File listed in " + self.manifest.path + " doesn't exist: "
                     + path +".\nExiting.")
                     quit()
+
+                if os.path.isdir(path):
+                    for f in os.listdir(path):
+                        tmp_path = path_mod.rel2abs(os.path.join(path, f), self.path)
+                        if not os.path.isdir(tmp_path):
+                            paths.append(tmp_path)
+                
+                else:
+                    paths.append(path)
 
             self.files = self.__create_flat_file_list(paths=paths);
             for f in self.files:
@@ -242,6 +250,13 @@ class Module(object):
         self.syn_package= opt_map["syn_package"];
         self.syn_project = opt_map["syn_project"];
         self.syn_top = opt_map["syn_top"];
+        
+        sff = SourceFileFactory()
+        self.syn_preflow = self.syn_postflow = None
+        if opt_map["syn_preflow"]:
+            self.syn_preflow = sff.new(opt_map["syn_preflow"])
+        if opt_map["syn_postflow"]:
+            self.syn_postflow = sff.new(opt_map["syn_postflow"])
 
         self.isparsed = True
 
@@ -262,7 +277,6 @@ class Module(object):
         modules = [self]
         while len(new_modules) > 0:
             cur_module = new_modules.pop()
-#            p.vprint("Current: " + str(cur_module))
             if not cur_module.isfetched:
                 p.echo("Error in modules list - unfetched module: " + str(cur_module))
                 quit()

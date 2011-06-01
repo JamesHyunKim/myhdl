@@ -213,13 +213,25 @@ class XISEFile(File):
         def __init__(self, path):
                 File.__init__(self, path)
 
+class SignalTapFile(File):
+        def __init__(self, path):
+                File.__init__(self, path)
+
+class DPFFile(File):
+        def __init__(self, path):
+                File.__init__(self, path)
+
 class NGCFile(SourceFile):
         def __init__(self, path):
-                SourceFile.__init__(self, path);
+                SourceFile.__init__(self, path)
 
 class WBGenFile(SourceFile):
         def __init__(self, path):
-                SourceFile.__init__(self, path);
+                SourceFile.__init__(self, path)
+
+class UnknownFile(File):
+        def __init__(self, path):
+                File.__init__(self, path)
 
 class SourceFileSet(object):
         def __init__(self):
@@ -289,4 +301,10 @@ class SourceFileFactory:
                         nf = TCLFile(path)
                 elif extension == 'xise' or extension == 'ise':
                         nf = XISEFile(path)
+                elif extension == 'stp':
+                        nf = SignalTapFile(path)
+                elif extension == 'dpf':
+                        nf = DPFFile(path)
+                else:
+                        nf = UnknownFile(path)
                 return nf

@@ -72,6 +72,10 @@ def main():
 
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
     default="false", help="verbose mode")
+    
+    parser.add_option("--test", dest="test", action="store_true",
+    default="false")
+
 
     (options, args) = parser.parse_args()
     global_mod.options = options
@@ -117,6 +121,8 @@ def main():
         kernel.generate_remote_synthesis_makefile()
     elif options.clean == True:
         kernel.clean_modules()
+    elif options.test == True:
+        kernel.generate_quartus_project()
     else:
         p.echo("Running automatic flow")
         kernel.run()
