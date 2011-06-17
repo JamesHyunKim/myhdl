@@ -347,6 +347,40 @@ clean:
                     self.write(" \\\n"+ os.path.join(dep_file.library, name, "."+name))
                 self.write('\n\n')
 
+    def generate_ghdl_makefile(self, fileset, top_module):
+        from srcfile import VerilogFile, VHDLFile
+        make_preambule_p1 = """## variables #############################
+PWD := $(shell pwd)
+WORK_NAME := work
+""" 
+        #open the file and write the above preambule (part 1)
+        self.initialize()
+        self.write("VHDL_SRC := ")
+        self.writeln('\\\n'.join([vhdl.rel_path() for vhdl in fileset.filter(VHDLFile)]))
+        self.writeln()
+
+        #list vhdl objects (_primary.dat files)
+        self.write("VHDL_OBJ := ")
+        self.writeln('\\\n'.join([vhdl.purename+".o" for vhdl in fileset.filter(VHDLFile)]))
+        self.writeln()
+        
+        self.writeln("sim: $(VHDL_OBJ)")
+        self.writeln()
+
+        for vhdl in fileset.filter(VHDLFile):
+            lib = vhdl.library
+            purename = vhdl.purename 
+            #each .o depends on corresponding .vhd file
+            self.write(purename+".o" + ": "+vhdl.rel_path())
+            if len(vhdl.dep_depends_on) != 0:
+                for dep_file in vhdl.dep_depends_on:
+                    dep_purename = dep_file.purename
+                    self.write(" "+dep_purename+".o")
+            self.write('\n')
+            self.write("\tghdl -a --work="+vhdl.library+" "+vhdl.rel_path())
+            self.write('\n')
+            
+
     def __get_rid_of_incdirs(self, vlog_opt):
         vlog_opt = self.__emit_string(vlog_opt)
         vlogs = vlog_opt.split(' ')

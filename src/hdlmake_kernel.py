@@ -45,7 +45,10 @@ class HdlmakeKernel(object):
             self.fetch(unfetched_only = True)
 
         if tm.action == "simulation":
-            self.generate_modelsim_makefile()
+            if tm.target == "ghdl":
+                self.generate_ghdl_makefile()
+            else:
+                self.generate_modelsim_makefile()
         elif tm.action == "synthesis":
             self.generate_ise_project()
             self.generate_ise_makefile()
@@ -83,9 +86,24 @@ class HdlmakeKernel(object):
         self.modules_pool.fetch_all(unfetched_only)
         p.vprint(str(self.modules_pool))
 
+    def generate_ghdl_makefile(self):
+        from dep_solver import DependencySolver
+        p.rawprint("Generating makefile for simulation for GHDL...")
+        solver = DependencySolver()
+
+        pool = self.modules_pool
+        if not pool.is_everything_fetched():
+            p.echo("A module remains unfetched. Fetching must be done prior to makefile generation")
+            p.echo(str([str(m) for m in self.modules_pool.modules if not m.isfetched]))
+            quit()
+        tm = pool.get_top_module()
+        flist = pool.build_global_file_list();
+        flist_sorted = solver.solve(flist);
+        self.make_writer.generate_ghdl_makefile(flist_sorted, tm)
+
     def generate_modelsim_makefile(self):
         from dep_solver import DependencySolver
-        p.rawprint("Generating makefile for simulation...")
+        p.rawprint("Generating makefile for simulation for Modelsim...")
         solver = DependencySolver()
 
         pool = self.modules_pool
