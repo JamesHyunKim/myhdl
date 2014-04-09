@@ -33,10 +33,11 @@ from util import path
 
 class GenerateISEProject(Action):
     def _check_manifest(self):
-        self._check_manifest_variable_is_set("top_module")
+       # self._check_manifest_variable_is_set("top_module")
         self._check_manifest_variable_is_set("syn_device")
         self._check_manifest_variable_is_set("syn_grade")
         self._check_manifest_variable_is_set("syn_package")
+        self._check_manifest_variable_is_set("syn_top")
 
     def _check_env(self):
         env = self.env
