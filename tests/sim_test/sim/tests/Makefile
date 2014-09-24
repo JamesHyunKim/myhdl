@@ -47,7 +47,7 @@ work/.work:
 
 work/genericTest/.genericTest_sv: src/genericTest.sv \
 work/RTLTopModule/.RTLTopModule_sv
-		vlog -work work $(VLOG_FLAGS) -sv +incdir+../environment+../sequences+src +incdir+../../mvc//questa_mvc_src/sv+../../mvc/questa_mvc_src/sv/mvc_base+../../mvc/include+../environment/+../sequences/ $<
+		vlog -work work $(VLOG_FLAGS) -sv +incdir+../environment+../sequences+src +incdir+../../mvc//questa_mvc_src/sv+../../mvc/questa_mvc_src/sv/mvc_base+../../mvc/include+ $<
 		@mkdir -p $(dir $@) && touch $@ 
 
 
