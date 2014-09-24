@@ -29,6 +29,7 @@ import sys
 import logging
 from new_dep_solver import DepParser
 from dep_file import DepRelation
+from srcfile import SourceFileFactory
 
 
 class VerilogPreprocessor(object):
@@ -113,11 +114,11 @@ class VerilogPreprocessor(object):
         if parent_dir is not None:
             possible_file = os.path.join(parent_dir, filename)
             if(os.path.isfile(possible_file)):
-                return possible_file
+                return os.path.abspath(possible_file)
         for searchdir in self.vpp_searchdir:
             probable_file = os.path.join(searchdir, filename)
             if(os.path.isfile(probable_file)):
-                return probable_file
+                return os.path.abspath(probable_file)
         logging.error("Can't find %s for %s in any of the include directories: %s"
                       % (filename, self.vlog_file.file_path, ', '.join(self.vpp_searchdir)))
         sys.exit("\nExiting")
@@ -184,12 +185,14 @@ class VerilogPreprocessor(object):
 
                 if matches["include"]:
                     path = self._search_include(last.group(1), os.path.dirname(file_name))
-                    logging.debug("Parsed cur. %s file includes %s" % (file_name, path))
+                    logging.debug("File being parsed %s includes %s" % (file_name, path))
                     line = self._preprocess_file(file_content=open(path, "r").read(),
                                                  file_name=path)
                     # print("IncBuf '%s'" % parsed)
                     if file_name not in self.vpp_filedeps.iterkeys():
                         self.vpp_filedeps[file_name] = [path]
+                    else:
+                        self.vpp_filedeps[file_name].append(path)
                     new_buf += line + '\n'
                     continue
 
@@ -538,8 +541,14 @@ class VerilogParser(DepParser):
         self.preprocessed = buf[:]
 
         #add includes as dependencies
-        for f in self.preprocessor.vpp_filedeps:
-            dep_file.add_relation(DepRelation(f, DepRelation.USE, DepRelation.INCLUDE))
+        try:
+            includes = self.preprocessor.vpp_filedeps[dep_file.path]
+            for f in includes:
+                #dep_file.add_relation(DepRelation(f, DepRelation.USE, DepRelation.INCLUDE))
+                dep_file.depends_on.add(SourceFileFactory().new(path=f, module=dep_file.module))
+            logging.debug( "%s has %d includes." % (str(dep_file), len(includes)))
+        except KeyError:
+            logging.debug(str(dep_file) + " has no includes.")
 
         m_inside_module = re.compile("(?:module|interface)\s+(\w+)\s*(?:\(.*?\))?\s*(.+?)(?:endmodule|endinterface)", re.DOTALL | re.MULTILINE)
         m_instantiation = re.compile("(?:\A|\\s*)\s*(\w+)\s+(?:#\s*\(.*?\)\s*)?(\w+)\s*\(.*?\)\s*", re.DOTALL | re.MULTILINE)
@@ -557,5 +566,5 @@ class VerilogParser(DepParser):
             re.subn(m_instantiation, do_inst, s.group(2))
         re.subn(m_inside_module, do_module,  buf)
 
-        dep_file.add_relation(DepRelation(os.path.basename(dep_file.filename), DepRelation.PROVIDE, DepRelation.INCLUDE))
+        dep_file.add_relation(DepRelation(dep_file.path, DepRelation.PROVIDE, DepRelation.INCLUDE))
         dep_file.is_parsed = True
