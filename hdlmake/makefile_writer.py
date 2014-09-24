@@ -467,9 +467,13 @@ clean:
                                    vl.rel_path())
                       )
             for dep_file in [dfile for dfile in vl.depends_on if dfile is not vl]:
-                name = dep_file.purename
-                extension = dep_file.extension()
-                self.write(" \\\n" + os.path.join(dep_file.library, name, ".%s_%s" % (name, extension)))
+                if dep_file in fileset: # the dep_file is compiled -> we depend on marker file
+                    name = dep_file.purename
+                    extension = dep_file.extension()
+                    self.write(" \\\n" + os.path.join(dep_file.library, name, ".%s_%s" % (name, extension)))
+                else: #the file is included -> we depend directly on the file
+                    self.write(" \\\n" + dep_file.rel_path())
+
             self.writeln()
 
             ###
@@ -502,10 +506,12 @@ clean:
                                    vhdl.rel_path())
                        )
             for dep_file in vhdl.depends_on:
-                name = dep_file.purename
-                extension = dep_file.extension()
-                self.write(" \\\n" + os.path.join(dep_file.library, name, ".%s_%s" % (name, extension)))
-
+                if dep_file in fileset: # the dep_file is compiled -> we depend on marker file
+                    name = dep_file.purename
+                    extension = dep_file.extension()
+                    self.write(" \\\n" + os.path.join(dep_file.library, name, ".%s_%s" % (name, extension)))
+                else: #the file is included -> we depend directly on the file
+                    self.write(" \\\n" + dep_file.rel_path())
             self.writeln()
             self.writeln(' '.join(["\t\tvcom $(VCOM_FLAGS)", vhdl.vcom_opt, "-work", lib, "$< "]))
             self.writeln("\t\t@mkdir -p $(dir $@) && touch $@\n")
@@ -604,6 +610,7 @@ isim.wdb
             #self.writeln(".PHONY: " + os.path.join(comp_obj, '.'+vl.purename+"_"+vl.extension()))
             self.write(os.path.join(comp_obj, '.'+vl.purename+"_"+vl.extension())+': ')
             self.write(vl.rel_path() + ' ')
+
             self.writeln(' '.join([fname.rel_path() for fname in vl.depends_on]))
             self.write("\t\tvlogcomp -work "+vl.library+"=./"+vl.library)
             self.write(" $(VLOGCOMP_FLAGS) ")
@@ -638,8 +645,11 @@ isim.wdb
             #if len(vhdl.depends_on) != 0:
             self.write(os.path.join(lib, purename, "."+purename) + ":")
             for dep_file in vhdl.depends_on:
-                name = dep_file.purename
-                self.write(" \\\n" + os.path.join(dep_file.library, name, "."+name + "_" + vhdl.extension()))
+                if dep_file in fileset:
+                    name = dep_file.purename
+                    self.write(" \\\n" + os.path.join(dep_file.library, name, "."+name + "_" + vhdl.extension()))
+                else:
+                    self.write(" \\\n" + os.path.join(dep_file.rel_path()))
             self.write('\n')
             self.writeln("\t\t@mkdir -p $(dir $@) && touch $@\n")
 
