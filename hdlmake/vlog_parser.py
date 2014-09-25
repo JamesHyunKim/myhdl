@@ -143,6 +143,8 @@ class VerilogPreprocessor(object):
                 "endif_else": re.compile("^\s*`(endif|else)\s*$")}
 
         vl_macro_expand = re.compile("`(\w+)(?:\(([\w\s,]*)\))?")
+        # init dependencies
+        self.vpp_filedeps[file_name] = []
 
         cur_iter = 0
 
@@ -158,10 +160,10 @@ class VerilogPreprocessor(object):
             for line in self._degapize(buf):
                 matches = {}
                 last = None
-                for k in exps.iterkeys():
-                    matches[k] = re.match(exps[k], line)
-                    if(matches[k]):
-                        last = matches[k]
+                for statement, stmt_regex in exps.iteritems():
+                    matches[statement] = re.match(stmt_regex, line)
+                    if(matches[statement]):
+                        last = matches[statement]
 
                 if matches["ifdef_elsif"]:
                     cond_true = self._find_macro(last.group(2)) is not None
@@ -184,16 +186,15 @@ class VerilogPreprocessor(object):
                     continue
 
                 if matches["include"]:
-                    path = self._search_include(last.group(1), os.path.dirname(file_name))
-                    logging.debug("File being parsed %s includes %s" % (file_name, path))
-                    line = self._preprocess_file(file_content=open(path, "r").read(),
-                                                 file_name=path)
-                    # print("IncBuf '%s'" % parsed)
-                    if file_name not in self.vpp_filedeps.iterkeys():
-                        self.vpp_filedeps[file_name] = [path]
-                    else:
-                        self.vpp_filedeps[file_name].append(path)
+                    included_file_path = self._search_include(last.group(1), os.path.dirname(file_name))
+                    logging.debug("File being parsed %s includes %s" % (file_name, included_file_path))
+                    line = self._preprocess_file(file_content=open(included_file_path, "r").read(),
+                                                 file_name=included_file_path)
+                    self.vpp_filedeps[file_name].append(included_file_path)
+                    # add the whole include chain to the dependencies of the currently parsed file
+                    self.vpp_filedeps[file_name].extend(self.vpp_filedeps[included_file_path])
                     new_buf += line + '\n'
+                    n_expansions += 1
                     continue
 
                 elif matches["define"]:
@@ -215,8 +216,8 @@ class VerilogPreprocessor(object):
                 new_buf += repl_line + '\n'
                 # if there was any expansion, then keep on iterating
                 if repl_line != line:
-                  n_expansions += 1
-                buf = new_buf
+                    n_expansions += 1
+            buf = new_buf
             if n_expansions == 0:
                 return new_buf
 
@@ -544,7 +545,6 @@ class VerilogParser(DepParser):
         try:
             includes = self.preprocessor.vpp_filedeps[dep_file.path]
             for f in includes:
-                #dep_file.add_relation(DepRelation(f, DepRelation.USE, DepRelation.INCLUDE))
                 dep_file.depends_on.add(SourceFileFactory().new(path=f, module=dep_file.module))
             logging.debug( "%s has %d includes." % (str(dep_file), len(includes)))
         except KeyError:
