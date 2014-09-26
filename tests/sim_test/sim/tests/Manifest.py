@@ -5,7 +5,8 @@ include_dirs = [ "../environment/",
 vlog_opt = '+incdir+' + \
            '../../mvc//questa_mvc_src/sv+' + \
            '../../mvc/questa_mvc_src/sv/mvc_base+' + \
-           '../../mvc/include+' 
+           '../../mvc/include+' +\
+           '../../uvm-1.1d/src'
                 
 top_module = "top"
 sim_tool = "vsim"

@@ -46,8 +46,13 @@ work/.work:
 	(vlib work && vmap -modelsimini modelsim.ini work && touch work/.work )|| rm -rf work 
 
 work/genericTest/.genericTest_sv: src/genericTest.sv \
-work/RTLTopModule/.RTLTopModule_sv
-		vlog -work work $(VLOG_FLAGS) -sv +incdir+../environment+../sequences+src +incdir+../../mvc//questa_mvc_src/sv+../../mvc/questa_mvc_src/sv/mvc_base+../../mvc/include+ $<
+../sequences/sequence.sv \
+../environment/Env_pkg.sv \
+work/RTLTopModule/.RTLTopModule_sv \
+../environment/env.sv \
+../environment/top.sv \
+src/FullTest_pkg.sv
+		vlog -work work $(VLOG_FLAGS) -sv +incdir+../environment+../sequences+src +incdir+../../mvc//questa_mvc_src/sv+../../mvc/questa_mvc_src/sv/mvc_base+../../mvc/include+../../uvm-1.1d/src $<
 		@mkdir -p $(dir $@) && touch $@ 
 
 
@@ -63,7 +68,8 @@ work/ipcore/.ipcore_sv
 		@mkdir -p $(dir $@) && touch $@ 
 
 
-work/ipcore/.ipcore_sv: ../../ipcores/ipcore/ipcore.sv
+work/ipcore/.ipcore_sv: ../../ipcores/ipcore/ipcore.sv \
+../../ipcores/ipcore/include/ipcoreInclude.sv
 		vlog -work work $(VLOG_FLAGS) -sv +incdir+../../ipcores/ipcore/include+../../ipcores/ipcore  $<
 		@mkdir -p $(dir $@) && touch $@ 
 
