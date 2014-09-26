@@ -9,6 +9,10 @@
 // Status          : Unknown, Use with caution!
 
 module RTLTopModule;
+   logic l1a;
+   initial
+     l1a <= 0;
+   
    includeModule incl();
    ipcore ip();
 endmodule // RTLTopModule

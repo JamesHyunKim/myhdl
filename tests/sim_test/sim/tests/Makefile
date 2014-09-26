@@ -21,8 +21,10 @@ work/includeModule/.includeModule_sv \
 work/RTLTopModule/.RTLTopModule_sv \
 work/ipcore/.ipcore_sv \
 
-VHDL_SRC := 
-VHDL_OBJ := 
+VHDL_SRC := ../../rtl/RTLTopModuleVHDL.vhdl \
+
+VHDL_OBJ := work/RTLTopModuleVHDL/.RTLTopModuleVHDL_vhdl \
+
 LIBS := work
 LIB_IND := work/.work
 ## rules #################################
@@ -73,5 +75,10 @@ work/ipcore/.ipcore_sv: ../../ipcores/ipcore/ipcore.sv \
 		vlog -work work $(VLOG_FLAGS) -sv +incdir+../../ipcores/ipcore/include+../../ipcores/ipcore  $<
 		@mkdir -p $(dir $@) && touch $@ 
 
+
+
+work/RTLTopModuleVHDL/.RTLTopModuleVHDL_vhdl: ../../rtl/RTLTopModuleVHDL.vhdl
+		vcom $(VCOM_FLAGS)  -work work $< 
+		@mkdir -p $(dir $@) && touch $@
 
 

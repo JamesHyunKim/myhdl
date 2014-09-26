@@ -13,6 +13,7 @@ module automatic top;
    timeprecision 1ps;
 
    RTLTopModule rtl();
+   RTLTopModuleVHDL rtlVhdl();
 
    initial
      run_test("genericTest");
